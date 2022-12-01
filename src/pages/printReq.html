@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Document</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <script src="../script/script.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/aadel112/googoose@master/jquery.googoose.js"></script>
+    <script src="../script/db.js"></script>
+    <script src="../script/xlsx.full.min.js"></script>
+    <script src="../script/html2pdf.bundle.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+    <style>
+        *{
+            font-size: 12px;
+        }
+        li{
+            list-style: none;
+        }
+        head li{
+            color:white
+        }
+        tr,td{
+            border: 1px solid gainsboro;
+        }
+        th{
+            border: 2px solid rgb(99, 99, 99);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="w-100" id="reqPrint">
+        <div style="width: 100%;text-align:right;padding:5px;padding-right: 10px;"><img src="../image/slogo.gif" width="100px"></div>
+        <div id="pdf" style="padding: 10px;margin-top: 20px;">
+          <h4 class="border-bottom border-dark text-center">PROCUREMENT REQUISITION</h4>
+          <div class="row mb-2">
+              <div class="col"> <span id="demandedByReq"style="font-weight: bold;"></span></div>
+              <div class="col" style="text-align:right;"><span id="datedReq" style="font-weight: bold;"></span></div>
+          </div>
+          <br>
+          <table class="w-100">
+              <thead>
+                  <tr>
+                     <th>Sn.</th>
+                      <th>Item Name</th>
+                      <th>Units <br> In Stock</th>
+                      <th>Units<br>(Required)</th>
+                      <th>Rate/Unit <br>(Approx.)</th>
+                      <th>Total Cost</th>
+                      <th>Location</th>
+                      <th>Remarks</th>
+                  </tr>
+              </thead>
+              <tbody id="reqBodyList">
+                 
+              </tbody>
+          </table>
+      </div>
+      </div>
+
+
+    <div style="position: absolute;bottom:40px;left: 20px;">
+        <p>Date:.................................</p>
+        <br>
+        <p>(Singnature Of Indentor)</p>
+    </div>
+    <div style="position: absolute;bottom:40px;right: 20px;" style="display: flex;">
+        <p>(G M Campus Admin)</p>
+    <input type="button" style="font-size: 14px;width: 10vw;"  class="hideonprint" value="Print" onclick="download()">
+    </div>
+</body>
+<script>
+     function reqListChange(){
+        const data=printDoc.get()
+        const products=data.products;
+        let total=0
+        console.log(data)
+        $("#reqBodyList").empty()
+        $('#demandedByReq').html('Demanded By: '+data.demandBy)
+        $('#datedReq').html('Date: '+data.dated)
+        products.map((c,i)=>{
+            let val=parseFloat(parseFloat(c.req)*parseFloat(c.rate)).toFixed(2)
+            total += parseFloat(val)
+            $('#reqBodyList').append(`
+            <tr>
+            <td>${i+1}</td>
+            <td>${c.productName}</td>
+            <td>${c.qty?c.qty:''}</td>
+            <td>${c.req?c.req:''}</td>
+            <td>${c.rate?c.rate:''}</td>
+            <td>${val?val:0}</td>
+            <td>${c.loc?c.loc:'--'}</td>
+            <td>${c.remarks?c.remarks:''}</td>
+        </tr>
+            `)
+        })
+        $('#reqBodyList').append(`
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><b>Approx. Total(Rs.)</b></td>
+            <td><b>${total.toFixed(2)}</b></td>
+            <td></td>
+            <td></td>
+        </tr>
+        `)
+}
+reqListChange()
+
+function download(){
+    let t=new Date().toLocaleDateString()
+    var o = {
+        filename: `Requirement.doc`
+    };
+    $(".hideonprint").hide()
+    window.print()
+}
+</script>
+</html>
