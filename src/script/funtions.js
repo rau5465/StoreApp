@@ -46,9 +46,10 @@ let req={
         return data
     }
 }
-
+deleteCont2=0
 setInterval(()=>{
     deleteCont=0
+    deleteCont2=0
 },3000)
 
 function requirementCreated(e){
@@ -62,9 +63,23 @@ function requirementCreated(e){
         return
     }
     allRequirements=[e, ...allRequirements]
+    filterReqHisCategory()
+}
+function reqListDelete(){
+    deleteCont2++;
+    if(deleteCont2 < 2){
+        say(3,'Click again to delete requirement')
+        return
+    }
+    deleteCont2=0
+    const id=$("#reqlist").val()
+    REQUIREMENTS.delete(id)
 }
 
-function say(type,message,interval){
+function say(type,message,interval,delay){
+    if(!delay){
+        delay=0;
+    }
     if(!interval){
         interval=3000
     }
@@ -78,11 +93,14 @@ function say(type,message,interval){
     if(type==3){
         color='orangered'
     }
-    $("#alert").css('background-color',color).css('display','block')
-    $("#alert").html(message)
     setTimeout(()=>{
-        $("#alert").css('display','none')
-    },interval)
+        $("#alert").css('background-color',color).css('display','block')
+        $("#alert").html(message)
+        setTimeout(()=>{
+            $("#alert").css('display','none')
+        },interval)
+    },delay)
+   
 }
 
 function gotAllProduct(data){
@@ -97,11 +115,13 @@ function printProduct(filterText,filterCategory,filterQty){
     $('#plist').empty()
     $('#productLists').empty()
     $('#productReqLists').empty()
+    $('#reqProductList').empty()
     const len=allProducts.length
     $('#productsInStore').html(`Total Products: ${len}`)
     let requirement=req.get()
     allProducts.map((c,i)=>{
         $('#productLists').append(`<option value="${tf(c.productName)}">`)
+        $('#reqProductList').append(`<option value="${tf(c.productName)}">`)
        // $('#productReqLists').append(`<option value="${c.productName}">${c.productName}</option>`)
        let rq=requirement.find(p=>c._id==p._id)
         let dt=false;
@@ -215,19 +235,20 @@ let totalReqCost=0;
             req.update(id,'remarks',q)
         }
     }catch{}
+    culculateTotalReqCost()
+   
+  })
+  function culculateTotalReqCost(){
     let totalCost=0;
-  
+    const reql=req.get()
     reql.map(c=>{
         if(c.rate && c.req){
-            if(cat && cat!=c.category){
-                return
-            }
             const cost=parseFloat(parseFloat(c.rate)*parseFloat(c.req))
             totalCost +=cost
         }
     })
     $("#reqCost").val(totalCost)
-  })
+  }
 
   function productDeleted(){
     gotAllProduct(allProducts)
@@ -256,20 +277,16 @@ let totalReqCost=0;
     }
   }
   })
+
   function filterReqCategory(){
-    const key=$("#productReqCategoryFilter").val()
-    printProductReq(key)
+    // const key=$("#productReqCategoryFilter").val()
+    // printProductReq(key)
   }
 
   function printProductReq(filterText,filterCategory,filterQty){
     $('#prlist').empty()
-    const cat=$('#productReqCategoryFilter').val()
     const len=allProducts.length
     let rq=req.get()
-    if(cat){
-            rq=rq.filter(c=>c.category==cat)
-    }
-    let totalReqCost=0
     const requirement=req.get();
     rq.map((c,i)=>{
        
@@ -291,7 +308,6 @@ let totalReqCost=0;
         let r=c.rate?c.rate:0;
         let val=parseFloat(m)*parseFloat(r)
         val=parseFloat(val.toFixed(2))
-        totalReqCost +=parseFloat(val)
         $('#prlist').append(`
         <tr id="l-${c._id}" class=" ${requirement.includes(c._id)?'less':''}" >
         <td>${i+1}</td>
@@ -311,7 +327,7 @@ let totalReqCost=0;
       </tr>
         `)
     })
-    $("#reqCost").val(totalReqCost)
+    culculateTotalReqCost()
 }
 
 
@@ -767,6 +783,7 @@ function deleteEntry(){
 
 function viewEntry(e){
     const entry=allEntry.find(c=>c._id==e)
+    console.log(entry)
     currentEntryId=e
     $('#shopDetailTable').empty();
     $('#entryDetailTable').empty();
@@ -789,6 +806,12 @@ function viewEntry(e){
                 
                 <td>${entry.sgst}</td>
             </tr>
+            <tr>
+                <td style="width: 80%;">Shipping Cost </td>
+                
+                <td>${entry.shippingCost}</td>
+            </tr>
+           
             <tr>
                 <th style="width: 80%;">Total Cost</th>
                 <th>${parseFloat(entry.totalCost).toFixed(2)}</th>
@@ -824,10 +847,10 @@ function viewEntry(e){
           <th>Cost</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody></tbody>
         `);
         prod.map((c,i)=>{
-            $('#entryDetailTable').append(`
+            $('#entryDetailTable tbody').append(`
             <tr>
             <td>${i+1}</td>
             <td>${c.productName}</td>
@@ -838,9 +861,6 @@ function viewEntry(e){
            </tr>
         `);
         })
-        $('#entryDetailTable').append(`
-        </tbody>
-        `);
     }else{
         $('#entryDetailType').html('Store Expense Details')
         $('#gstDetailTable').append(`
@@ -869,11 +889,11 @@ function viewEntry(e){
           <th>Cost</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody></tbody>
         `);
         prod.map((c,i)=>{
             const el=allProducts.find(p=>p.productName==c.productName)
-            $('#entryDetailTable').append(`
+            $('#entryDetailTable tbody').append(`
             <tr>
             <td>${i+1}</td>
             <td>${c.productName}</td>
@@ -885,9 +905,7 @@ function viewEntry(e){
            </tr>
         `);
         })
-        $('#entryDetailTable').append(`
-        </tbody>
-        `);
+    
     }
     $('#entryDetails').show()
 }
@@ -1258,8 +1276,8 @@ $('.nav-link').click(function(){
   }
   }
   function requirementPage(){
-   
-  $('.screen').hide()
+    REQUIREMENTS.get()
+    $('.screen').hide()
   $('#requirement').show()
     printProductReq()
   }
@@ -1518,6 +1536,15 @@ function gstChanged(){
         say(0,'Demanded by is empty')
         return
     }
+    if(!data.remarks){
+        say(0,'Remarks is empty')
+        return
+    }
+    const res=allRequirements.find(c=>c.remarks==data.remarks)
+    if(res){
+        say(0,'Remarks Matched: Please Change')
+        return
+    }
     REQUIREMENTS.add(data)
     
 }
@@ -1527,25 +1554,8 @@ function gstChanged(){
     filterReqHisCategory()
   }
 
-  function newReqProduct(){
-    let data={}
-    data.category=$('#productReqCategoryFilter').val()
-    if(!data.category){
-        say(0,'Select a valid category')
-        return
-    }
-    data.productName=$('#productReqSearch').val()
-    data._id=new Date().getTime()
-    req.add(data)
-    printProductReq();
-}
 
-function requirementHistoryPage(){
-    REQUIREMENTS.get()
-    $('.screen').hide()
-    $('#requirementHistory').show()
-    gotAllReq()
-}
+
 
 
 
@@ -1575,26 +1585,28 @@ if(user.role ==3){
 
 
 function filterReqHisCategory(){
-    const cat=$('#productReqHisCategoryFilter').val()
     let data=allRequirements
-    if(cat){
-        data=data.filter(c=>c.category==cat)
-    }
     if(!data){
         return
     }
     $('#reqlist').empty()
     data.map(c=>{
-        $('#reqlist').append(`<option value='${c._id}'>${c.remarks ? c.remarks+' ('+c.products.length+' products)' :c.dated} </option>`)
+        $('#reqlist').append(`<option value='${c._id}'>${ c.remarks+' ('+c.products.length+' products)('+c.dated+")"} </option>`)
     })
     $('#reqlist').show()
 }
 
-function reqListChange(){
+function reqListPrint(){
     const res=$('#reqlist').val()
     const data=allRequirements.find(c=>c._id==res)
     printDoc.set(data)
    window.open('printReq.html')
+}
+
+function printEntry(){
+    const data=allEntry.find(c=>c._id==currentEntryId)
+    printDoc.set(data)
+    window.open('printBill.html')
 }
 
 function printDiv(el) {
@@ -1606,9 +1618,7 @@ function printDiv(el) {
     document.body.innerHTML = printContents;
 
     window.print();
-
-    document.body.innerHTML = originalContents;
-
+    window.location='home.html'
 }
 
 function tableToCSV(el) {
@@ -1649,6 +1659,7 @@ function tableToCSV(el) {
     downloadCSVFile(csv_data);
 
 }
+
 function downloadCSVFile(csv_data) {
  
     // Create CSV file object and feed
@@ -1675,6 +1686,67 @@ function downloadCSVFile(csv_data) {
     temp_link.click();
     document.body.removeChild(temp_link);
 }
+
+function productReqSelected(){
+    const pn=$('#productReqSearch').val()
+    const pd=allProducts.find(c=>c.productName==pn)
+    if(pd){
+        req.add(pd);
+        $('#productReqSearch').val('')
+        printProductReq();
+    }
+
+}
+
+function newReqProduct(){
+    let data={}
+    const pn=$('#productReqSearch').val()
+    const pd=allProducts.find(c=>c.productName==pn)
+    if(pd){
+        req.add(pd);
+    }else{
+        data.category=$('#productReqCategoryFilter').val()
+        if(!data.category){
+            say(0,'Select a valid category')
+            return
+        }
+        data.productName=pn
+        data._id=new Date().getTime()
+        req.add(data)
+    }
+    $('#productReqSearch').val('')
+    printProductReq();
+}
+
+function reqListEdit(){
+    const res=$('#reqlist').val()
+    const data=allRequirements.find(c=>c._id==res)
+    req.save(data.products)
+    printProductReq();
+    printProduct()
+    $('#demandedBy').val(data.demandBy)
+    $('#reqRemarks').val(data.remarks)
+    $('#reqDate').val(data.dated)
+}
+
+function requirementDeleted(e){
+    allRequirements=allRequirements.filter(c=>c._id!=e._id)
+    filterReqHisCategory()
+    say(1,'Requirement deleted')
+}
+
+function deleteDraft(){
+    req.clear()
+    printProductReq();
+    printProduct()
+}
+
+function historyDateChange(){
+    const date=$('#historyDate').val()
+    history.get(date)
+}
+
+
 CATEGORIES.get()
 PRODUCTS.get()
 

@@ -9,6 +9,7 @@ const allCategoryUrl=`${host}/api/category`
 const allEntryUrl=`${host}/api/entry`
 const allContactUrl=`${host}/api/contact`
 const allRequirementUrl=`${host}/api/requirement`
+const allHistoryUrl=`${host}/api/history`
 
 let productByDate=[]
 let allUsers;
@@ -45,6 +46,7 @@ const PRODUCTS={
         const data= await res.json()
         allProducts=data
         gotAllProduct(data)
+        
     },
     add:function(e){
         if(e){
@@ -330,9 +332,8 @@ const REQUIREMENTS={
         }
     },
     delete:function(id){
-        let requirements=this.get()
-        requirements=requirements.filter(c=>c._id!=id)
-        this.save(requirements)
+        let url=`${allRequirementUrl}/${user._id}/${id}`
+        conn('DELETE',url,null,requirementDeleted,(ee)=>{console.log(ee)})
     },
     update:function(id,data){
         let requirements=this.get()
@@ -351,7 +352,6 @@ const REQUIREMENTS={
 const printDoc={
     get:function(){
         if(localStorage.printDoc){
-
             return JSON.parse(localStorage.printDoc)
         }
     },
@@ -359,3 +359,32 @@ const printDoc={
         localStorage.printDoc=JSON.stringify(e)
     }
 }
+
+const history={
+    post:async function(){
+        const res= await fetch(allHistoryUrl);
+        const data=await res.json()
+    },
+    get:async function(date){
+        const ms=new Date(date).getTime()
+        console.log(date)
+        const res= await fetch(allHistoryUrl+'/'+ms);
+        const data=await res.json()
+        if(data.msg){
+            say(0,data.msg)
+            return
+         }
+         allProducts=[]
+         gotAllProduct(allProducts)
+         say(1,'Showing Products of Date:'+ new Date(parseInt(data.dated)).toLocaleDateString(),4000)
+         say(3,'Refresh page to go back to todays data',6000,6000)
+         say(3,'You can search and Download Products as CSV from old date',5000,13000)
+         setTimeout(()=>{
+             allProducts=data.products
+             gotAllProduct(allProducts)
+         },4000)
+    },
+}
+
+
+history.post()

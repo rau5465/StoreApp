@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Document</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <script src="../script/script.js"></script>
+    <script src="../script/db.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/aadel112/googoose@master/jquery.googoose.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+    <style>
+        *{
+            font-size: 12px;
+        }
+        li{
+            list-style: none;
+        }
+        head li{
+            color:white
+        }
+        tr,td{
+            border: 1px solid gainsboro;
+        }
+        th{
+            border: 2px solid rgb(99, 99, 99);
+            text-align: center;
+        }
+        td{
+            text-align: center;
+        }
+    </style>
+</head>
+<body><input type="button" style="font-size: 14px;width: 10vw;transform: translateX(-50%);margin-left: 50%;"  class="hideonprint" value="Print" onclick="download()">
+    <div class="w-100" id="billPrint">
+        <div style="width: 100%;text-align:right;padding:5px;padding-right: 10px;"><img src="../image/slogo.gif" width="100px"></div>
+        <h5 id="entryDetailType"    style="text-align: center;"></h5>
+        <div id="pdf" style="padding: 10px;margin-top: 5px;">
+            <table id="shopDetailTable" class="w-100"></table>
+            <table id="entryDetailTable" class="w-100"></table>
+            <table id="gstDetailTable" class="w-100"></table>
+        </div>
+    </div>
+        
+</body>
+
+<script>
+
+function gotAllProduct(){
+    const entry=printDoc.get()
+    $('#entryDetailType').html('Store Expense')
+        $('#gstDetailTable').append(`
+                
+            <tr>
+                <th style="width: 80%;">Total Cost</th>
+                <th>${parseFloat(entry.totalCost).toFixed(2)}</th>
+            </tr>
+        `);
+        $('#shopDetailTable').append(`
+            <tr>
+                <td>Date</td>
+                <td>${entry.dated} </td>
+            </tr>
+        `);
+        const prod=entry.products
+        $('#entryDetailTable').append(`
+        <thead>
+        <tr style="border: 1px solid black;">
+        <th>Sn.</th>
+          <th>Product</th>
+          <th>Qty Used</th>
+          <th>Qty Avl.</th>
+          <th>Rate</th>
+          <th>Remarks</th>
+          <th>Cost</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+        `);
+        prod.map((c,i)=>{
+            const avl=c.avl?parseFloat(parseFloat(c.avl)-parseFloat(c.qty)):0
+            $('#entryDetailTable tbody').append(`
+            <tr>
+            <td>${i+1}</td>
+            <td>${c.productName}</td>
+            <td>${c.qty?c.qty:''}</td>
+            <td>${avl}</td>
+            <td>${c.rate?c.rate:''}</td>
+            <td>${c.remarks?c.remarks:''}</td>
+            <td>${c.cost?c.cost:''}</td>
+           </tr>
+        `);
+        })
+    }
+
+    
+function billList(){
+    const entry=printDoc.get()
+    
+    try{
+        if(!entry.type){
+        say(0, 'This Document Can not displayed on this page',10000)
+        }
+    }catch{
+        say(0, 'This Document Can not displayed on this page',10000)
+    }
+
+    if(entry.type=='recieved'){
+        $('#entryDetailType').html('Bill Details')
+        $('#gstDetailTable').append(`
+                <tr>
+                <td style="width: 80%;text-align:right;">IGST ${entry.igstr?'('+ entry.igstr +')':''}</td>
+                <td style="text-align:center;">${entry.igst}</td>
+            </tr>
+            <tr>
+            <td style="width: 80%;text-align:right;">CGST ${entry.cgstr?'('+ entry.cgstr +')':''}</td>
+            <td style="text-align:center;">${entry.cgst}</td>
+            </tr>
+            <tr>
+                <td style="width: 80%;text-align:right;">SGST ${entry.sgstr?'('+ entry.sgstr +')':''}</td>
+                <td style="text-align:center;">${entry.sgst}</td>
+            </tr>
+            <tr>
+                <td style="width: 80%;text-align:right;">Shipping Cost</td>
+                <td style="text-align:center;">${entry.shippingCost}</td>
+            </tr>
+            <tr>
+                <th style="width: 80%;text-align:right;">Total Cost</th>
+                <th style="text-align:center;">${parseFloat(entry.totalCost).toFixed(2)}</th>
+            </tr>
+        `);
+        $('#shopDetailTable').append(`
+            <tr style="border-bottom: 1px solid black;">
+                <th>Supplier/Shop</th>
+                <th>${entry.contactName}</th>
+            </tr>
+            <tr>
+                <td>GstNo</td>
+                <td>${entry.gstno}</td>
+            </tr>
+            <tr>
+            <td>BillNo</td>
+            <td>${entry.billNumber}</td>
+            </tr>
+            <tr>
+                <td>Date</td>
+                <td>${entry.dated}</td>
+            </tr>
+        `);
+        const prod=entry.products
+        $('#entryDetailTable').append(`
+        <thead>
+        <tr style="border: 1px solid black;">
+        <th>Sn.</th>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Rate</th>
+        <th>Gst(%)</th>
+        <th>Gst(₹)</th>
+        <th>Cost</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+        `);
+        prod.map((c,i)=>{
+            const gst=c.gst?parseFloat(c.gst):0;
+                const cost=parseFloat(c.qty)*parseFloat(c.rate)
+                const gstval=parseFloat((cost*gst)/100).toFixed(2)
+                $('#entryDetailTable tbody').append(`
+                    <tr>
+                    <td>${i+1}</td>
+                    <td>${c.productName}</td>
+                    <td>${c.qty}</td>
+                    <td>${c.rate?c.rate:''}</td>
+                    <td>${c.gst?c.gst:'--'}</td>
+                    <td>${c.gst?gstval:'--'}</td>
+                    <td>${c.cost?c.cost:''}</td>
+                    </tr>
+                `);
+        })
+}else{
+    gotAllProduct()
+   
+$('#entryDetails').show()
+}
+}
+
+function download(){
+let t=new Date().toLocaleDateString()
+var o = {
+    filename: `expance.doc`
+};
+$(".hideonprint").hide()
+window.print()
+}
+
+billList()
+</script>
+</html>

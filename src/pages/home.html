@@ -150,7 +150,8 @@
         overflow: auto;
       }
       .tableWrap2{
-        max-height: 50vh;
+        max-height: 65vh;
+        min-height: 20vh;
         border: 2px solid black;
         overflow: auto;
       }
@@ -284,15 +285,18 @@
       #entryDetailTable{
         width: 100%;
       }
+      #entryDetailTable tbody{
+        max-height: 60vh;
+      }
       #entryDetailTable tr th{
         border-bottom: 1px solid rgba(0, 0, 0, 0.253);
-        padding:3px;
-        font-size: 12px;
+        padding:2px;
+        font-size: 11px;
       }
       #entryDetailTable tr td{
         border-bottom: 1px solid rgba(0, 0, 0, 0.253);
-        padding:3px;
-        font-size: 12px;
+        padding:2px;
+        font-size: 11px;
       }
       #gstDetailTable tr th,
       #gstDetailTable tr td{
@@ -422,15 +426,10 @@
       <li>
         <a href="#" class="nav-link text-white" onclick="requirementPage()">
           <img src="../image/supplier.png" class="bi pe-none me-2" width="12" height="12"><use xlink:href="#grid"/></svg>
-         New Requirement
-        </a>
-      </li>
-      <li>
-        <a href="#" class="nav-link text-white" onclick="requirementHistoryPage()">
-          <img src="../image/supplier.png" class="bi pe-none me-2" width="12" height="12"><use xlink:href="#grid"/></svg>
           Requirements
         </a>
       </li>
+      
       <li>
         <a href="#" class="nav-link text-white" onclick="supplierPage()">
           <img src="../image/supplier.png" class="bi pe-none me-2" width="12" height="12"><use xlink:href="#grid"/></svg>
@@ -474,6 +473,9 @@
           <li>
            Filter: <input type="text" id="productQtyFilterSearch" placeholder="Enter Unit Limit" onkeyup="productQtyFilterSearch()">
           </li>
+          <li data-toggle="tooltip" data-placement="bottom" title="Old date product data will be displayed">
+            History: <input type="date" id="historyDate" onchange="historyDateChange()" >
+           </li>
       </div>
       <div id="productListArea" class="tableWrap">
           <table>
@@ -529,10 +531,25 @@
       </li>
       <li data-toggle="tooltip" data-placement="bottom" title="New Product Name if product not exist it Product List">
         <span>Add Random Product </span><br>
-        <input type="text" id="productReqSearch" placeholder="Product Name" onkeyup="productReqSearch()">
+        <input type="text" id="productReqSearch" placeholder="Product Name" onchange="productReqSelected()" list="reqProductList">
+        <datalist id="reqProductList">
+          
+        </datalist>
       </li>
       <li>
        <input type="button" value="Add" class="bg-primary border-2 border-primary text-white" onclick="newReqProduct()">
+      </li> 
+      <li style="width: 10vw;"></li>
+      <li>
+        <span>Select Requirement:</span><br>
+        <select name="reqlist" id="reqlist" style="display: none;">
+    
+        </select>
+      </li>
+      <li>
+        <input type="button" value="Copy"  onclick="reqListEdit()">
+        <input type="button" value="Print"  onclick="reqListPrint()">
+        <input type="button" value="Delete" style="color: #fff;background-color: red;" onclick="reqListDelete()">
       </li>
   </div>
   <div id="productReqListArea" class="tableWrap">
@@ -575,34 +592,12 @@
     <input type="date" class="rq" style="font-size: 0.7vw;margin:5px;"  id="reqDate">
   </li>
     <input type="button" style="font-size: 1vw;margin:5px;width: 10vw;" value="Create Requirement" onclick="saveReq()">
+    <p onclick="deleteDraft()" style="font-size: 0.65vw;font-weight: 800;color:rgb(255, 8, 0);width: 100%;text-align: right;padding:10px;padding-right: 15px;cursor: pointer;">Delete All</p>
  </div>
 </div>
 
 <!-- -------- requirement history--->
 
-<div id="requirementHistory" class="screen" style="position: relative;">
-  <div class="d-flex">
-    
-    <div style="width:30vw;padding:5px">
-      <li>
-        <span>Select Category:</span><br>
-        <select name="productReqHisCategoryFilter" id="productReqHisCategoryFilter" onchange="filterReqHisCategory()">
-    
-        </select>
-      </li>
-      <li>
-        <span>Select Requirement:</span><br>
-        <select name="reqlist" id="reqlist" style="display: none;">
-    
-        </select>
-      </li>
-      <li class="mt-4">
-        <input type="button" value="View" style="width:12vw;" onclick="reqListChange()">
-      </li>
-    </div>
-  </div>
-
-</div>
 
 
     <!-- Entry starts -->
@@ -810,37 +805,39 @@
               <td>value</td>
              </tr>
           </table>
-          <table id="entryDetailTable" class="tableWrap2">
-            <thead>
-              <tr style="border: 1px solid black;">
-                <th>Sn.</th>
-                <th>Product</th>
-                <th>Qty</th>
-                <th>Rate</th>
-                <th>Remarks</th>
-                <th>Cost</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>Suprime</td>
-                <td>5</td>
-                <td>100</td>
-                <td>2%</td>
-                <td>500</td>
-               </tr>
-              
-            </tbody>
-          
-          </table>
+          <div class="tableWrap2">
+            <table id="entryDetailTable">
+              <thead>
+                <tr style="border: 1px solid black;">
+                  <th>Sn.</th>
+                  <th>Product</th>
+                  <th>Qty</th>
+                  <th>Rate</th>
+                  <th>Remarks</th>
+                  <th>Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>Suprime</td>
+                  <td>5</td>
+                  <td>100</td>
+                  <td>2%</td>
+                  <td>500</td>
+                 </tr>
+                
+              </tbody>
+            
+            </table>
+          </div>
           <table id="gstDetailTable">
              <tr>
               <th style="width: 80%;">Total Cost</th>
               <th>7000</th>
              </tr>
           </table>
-          <label onclick="printDiv('entryDetails')" class="m-1 mt-4 btn btn-primary btn-sm ph">Print</label>
+          <label onclick="printEntry()" class="m-1 mt-4 btn btn-primary btn-sm ph">Print</label>
           <label id="deleteEntry" onclick="deleteEntry()" class="m-1 mt-4 btn btn-danger btn-sm ph">Delete</label>
           <label id="restoreEntry" onclick="restoreEntry()" class="m-1 mt-4 btn btn-danger btn-sm ph">Delete & Restore</label>
           <label class="ph" onclick="$('#entryDetails').hide()" style="position: absolute;top:5px;left: 5px;font-size: 1.2vw;cursor: pointer; height:2vw;width:2vw;text-align:center;border-radius:50%;margin:0;padding:0;color:red;background-color: white;">&times;</label>
