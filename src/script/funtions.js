@@ -119,6 +119,7 @@ function printProduct(filterText,filterCategory,filterQty){
     const len=allProducts.length
     $('#productsInStore').html(`Total Products: ${len}`)
     let requirement=req.get()
+    const cat=$('#productListFilter').val()
     allProducts.map((c,i)=>{
         $('#productLists').append(`<option value="${tf(c.productName)}">`)
         $('#reqProductList').append(`<option value="${tf(c.productName)}">`)
@@ -137,6 +138,7 @@ function printProduct(filterText,filterCategory,filterQty){
         if(filterQty && filterQty < c.qty){
             return
         }
+        if(cat && !c.category.toLowerCase().includes(cat.toLowerCase())) return
         let val='';
         if(c.qty && c.rate){
             val=parseFloat(c.qty)*parseFloat(c.rate)
@@ -419,6 +421,7 @@ function gotAllCategory(){
 
 function gotAllEntry(){
     const type=$('#allEntryTypeFilter').val()
+    productEntryDateFilter()
     printAllEntry(type)
 }
 
@@ -630,6 +633,8 @@ function seachEntry(){
 function clearEntryFilter(){
    $("#entryFromDate").val('')
 $("#entryToDate").val('')
+$("#entryGroup").val('Group')
+
 const type=$('#allEntryTypeFilter').val()
 printAllEntry(type)
 }
@@ -1392,7 +1397,7 @@ function filterEntryGroupType(key){
     }
     const from=$("#entryFromDate").val()
     const to=$("#entryToDate").val()
-  
+  console.log(key)
     printProductByDate(key,type,from,to)
 }
 
@@ -1427,7 +1432,6 @@ function gstChanged(){
     if(key){
         data=data.filter(c=>c.productName.toLowerCase().includes(key)||c.contactName.toLowerCase().includes(key)||c.billNumber.toLowerCase().includes(key)||c.gstno.toLowerCase().includes(key) || c.remarks.toLowerCase().includes(key) || c.category.toLowerCase().includes(key))
     }
-
 
     if(!tdate){
         tdate=new Date().getTime()

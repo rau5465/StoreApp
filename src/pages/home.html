@@ -150,7 +150,7 @@
         overflow: auto;
       }
       .tableWrap2{
-        max-height: 65vh;
+        max-height: 42vh;
         min-height: 20vh;
         border: 2px solid black;
         overflow: auto;
@@ -286,7 +286,7 @@
         width: 100%;
       }
       #entryDetailTable tbody{
-        max-height: 60vh;
+        max-height:42vh;
       }
       #entryDetailTable tr th{
         border-bottom: 1px solid rgba(0, 0, 0, 0.253);
@@ -592,7 +592,11 @@
     <input type="date" class="rq" style="font-size: 0.7vw;margin:5px;"  id="reqDate">
   </li>
     <input type="button" style="font-size: 1vw;margin:5px;width: 10vw;" value="Create Requirement" onclick="saveReq()">
-    <p onclick="deleteDraft()" style="font-size: 0.65vw;font-weight: 800;color:rgb(255, 8, 0);width: 100%;text-align: right;padding:10px;padding-right: 15px;cursor: pointer;">Delete All</p>
+    <li style="width:100%;display: flex;">
+      <p style="width: 83%;"></p>
+      <p onclick="deleteDraft()" style="font-size: 0.65vw;font-weight: 800;color:rgb(255, 8, 0);padding:10px;padding-right: 15px;cursor: pointer;">Delete All</p>
+    </li>
+   
  </div>
 </div>
 

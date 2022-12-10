@@ -96,8 +96,8 @@ function gotAllProduct(){
 
     
 function billList(){
+    let xGst
     const entry=printDoc.get()
-    
     try{
         if(!entry.type){
         say(0, 'This Document Can not displayed on this page',10000)
@@ -108,28 +108,7 @@ function billList(){
 
     if(entry.type=='recieved'){
         $('#entryDetailType').html('Bill Details')
-        $('#gstDetailTable').append(`
-                <tr>
-                <td style="width: 80%;text-align:right;">IGST ${entry.igstr?'('+ entry.igstr +')':''}</td>
-                <td style="text-align:center;">${entry.igst}</td>
-            </tr>
-            <tr>
-            <td style="width: 80%;text-align:right;">CGST ${entry.cgstr?'('+ entry.cgstr +')':''}</td>
-            <td style="text-align:center;">${entry.cgst}</td>
-            </tr>
-            <tr>
-                <td style="width: 80%;text-align:right;">SGST ${entry.sgstr?'('+ entry.sgstr +')':''}</td>
-                <td style="text-align:center;">${entry.sgst}</td>
-            </tr>
-            <tr>
-                <td style="width: 80%;text-align:right;">Shipping Cost</td>
-                <td style="text-align:center;">${entry.shippingCost}</td>
-            </tr>
-            <tr>
-                <th style="width: 80%;text-align:right;">Total Cost</th>
-                <th style="text-align:center;">${parseFloat(entry.totalCost).toFixed(2)}</th>
-            </tr>
-        `);
+       
         $('#shopDetailTable').append(`
             <tr style="border-bottom: 1px solid black;">
                 <th>Supplier/Shop</th>
@@ -149,7 +128,13 @@ function billList(){
             </tr>
         `);
         const prod=entry.products
-        $('#entryDetailTable').append(`
+        prod.map(c=>{
+            if(c.gst){
+                xGst=true
+            }
+        })
+        if(xGst){
+            $('#entryDetailTable').append(`
         <thead>
         <tr style="border: 1px solid black;">
         <th>Sn.</th>
@@ -163,8 +148,23 @@ function billList(){
     </thead>
     <tbody></tbody>
         `);
+        }else{
+            $('#entryDetailTable').append(`
+        <thead>
+        <tr style="border: 1px solid black;">
+        <th>Sn.</th>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Rate</th>
+        <th>Cost</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+        `);
+        }
         prod.map((c,i)=>{
-            const gst=c.gst?parseFloat(c.gst):0;
+                if(xGst){
+                const gst=c.gst?parseFloat(c.gst):0;
                 const cost=parseFloat(c.qty)*parseFloat(c.rate)
                 const gstval=parseFloat((cost*gst)/100).toFixed(2)
                 $('#entryDetailTable tbody').append(`
@@ -178,7 +178,45 @@ function billList(){
                     <td>${c.cost?c.cost:''}</td>
                     </tr>
                 `);
+                }else{
+                    $('#entryDetailTable tbody').append(`
+                    <tr>
+                    <td>${i+1}</td>
+                    <td>${c.productName}</td>
+                    <td>${c.qty}</td>
+                    <td>${c.rate?c.rate:''}</td>
+                    <td>${c.cost?c.cost:''}</td>
+                    </tr>
+                `);
+                }
+               
         })
+        if(!xGst){
+            $('#gstDetailTable').append(`
+                    <tr>
+                    <td style="width: 80%;text-align:right;">IGST ${entry.igstr?'('+ entry.igstr +')':''}</td>
+                    <td style="text-align:center;">${entry.igst}</td>
+                </tr>
+                <tr>
+                <td style="width: 80%;text-align:right;">CGST ${entry.cgstr?'('+ entry.cgstr +')':''}</td>
+                <td style="text-align:center;">${entry.cgst}</td>
+                </tr>
+                <tr>
+                    <td style="width: 80%;text-align:right;">SGST ${entry.sgstr?'('+ entry.sgstr +')':''}</td>
+                    <td style="text-align:center;">${entry.sgst}</td>
+                </tr>
+            `);
+        }
+        $('#gstDetailTable').append(`
+                <tr>
+                    <td style="width: 80%;text-align:right;">Shipping Cost</td>
+                    <td style="text-align:center;">${entry.shippingCost}</td>
+                </tr>
+                <tr>
+                    <th style="width: 80%;text-align:right;">Total Cost</th>
+                    <th style="text-align:center;">${parseFloat(entry.totalCost).toFixed(2)}</th>
+                </tr>
+            `);
 }else{
     gotAllProduct()
    
